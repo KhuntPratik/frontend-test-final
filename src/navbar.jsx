@@ -72,11 +72,23 @@ export default function Navbar() {
                 )}
 
                 {role === 'doctor' && (
-                  <li className="nav-item">
-                    <NavLink className="nav-link" to="/doctorhome">
-                      Doctor Dashboard
-                    </NavLink>
-                  </li>
+                  <>
+                    <li className="nav-item">
+                      <NavLink className="nav-link" to="/doctorhome">
+                        Today's Queue
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink className="nav-link" to="/doctor/prescription">
+                        Add Prescription
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink className="nav-link" to="/doctor/report">
+                        Add Report
+                      </NavLink>
+                    </li>
+                  </>
                 )}
 
                 {role === 'patient' && (

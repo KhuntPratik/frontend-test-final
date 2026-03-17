@@ -57,6 +57,60 @@ export default function ReceptionistHome() {
     }
   }
 
+  const handleMarkInProgress = async (queueId) => {
+    if (!queueId) return
+    setError('')
+    setLoading(true)
+    try {
+      await axios.patch(
+        `${BASE_URL}/queue/${queueId}`,
+        { status: 'in-progress' },
+        { headers: authHeaders() }
+      )
+      setQueue((prev) =>
+        prev.map((item) =>
+          (item.id || item._id) === queueId
+            ? { ...item, status: 'in-progress' }
+            : item
+        )
+      )
+    } catch (err) {
+      const data = err?.response?.data
+      setError(
+        data?.message || data?.error || err?.message || 'Failed to update queue'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSkip = async (queueId) => {
+    if (!queueId) return
+    setError('')
+    setLoading(true)
+    try {
+      await axios.patch(
+        `${BASE_URL}/queue/${queueId}`,
+        { status: 'skipped' },
+        { headers: authHeaders() }
+      )
+      setQueue((prev) =>
+        prev.map((item) =>
+          (item.id || item._id) === queueId
+            ? { ...item, status: 'skipped' }
+            : item
+        )
+      )
+    } catch (err) {
+      const data = err?.response?.data
+      setError(
+        data?.message || data?.error || err?.message || 'Failed to update queue'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10)
     setSelectedDate(today)
@@ -134,12 +188,34 @@ export default function ReceptionistHome() {
                         </td>
                         <td>
                           <div className="d-flex gap-2">
-                            <button className="btn btn-success btn-sm">
-                              In progress
-                            </button>
-                            <button className="btn btn-outline-secondary btn-sm">
-                              Skip
-                            </button>
+                            {(item.status || item.queueEntry?.status) ===
+                            'waiting' ? (
+                              <>
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  onClick={() =>
+                                    handleMarkInProgress(item.id || item._id)
+                                  }
+                                  disabled={loading}
+                                >
+                                  In progress
+                                </button>
+                                <button
+                                  className="btn btn-outline-secondary btn-sm"
+                                  onClick={() => handleSkip(item.id || item._id)}
+                                  disabled={loading}
+                                >
+                                  Skip
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                className="btn btn-outline-secondary btn-sm"
+                                disabled
+                              >
+                                Done
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

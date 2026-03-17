@@ -5,6 +5,8 @@ import AdminHome from './Admin/admin'
 import PatientHome from './Patient/patient'
 import ReceptionistHome from './Receptionist/receptionist'
 import Navbar from './navbar'
+import AddPrescription from './Doctor/AddPrescription'
+import AddReport from './Doctor/AddReport'
 import BookAppointment from './Patient/BookAppointment'
 import MyAppointments from './Patient/MyAppointments'
 import MyPrescriptions from './Patient/MyPrescriptions'
@@ -38,6 +40,22 @@ function App() {
             element={
               <RequireRole role="doctor">
                 <DoctorHome />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/doctor/prescription"
+            element={
+              <RequireRole role="doctor">
+                <AddPrescription />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/doctor/report"
+            element={
+              <RequireRole role="doctor">
+                <AddReport />
               </RequireRole>
             }
           />

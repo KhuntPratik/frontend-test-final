@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_URL
@@ -7,6 +8,7 @@ export default function DoctorHome() {
   const [queue, setQueue] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const authHeaders = () => {
     const token =
@@ -18,9 +20,27 @@ export default function DoctorHome() {
     setError('')
     setLoading(true)
     try {
-      const response = await axios.get(`${BASE_URL}/doctor/queue`, {
-        headers: authHeaders(),
-      })
+      const urls = [`${BASE_URL}/doctor/queue`, `${BASE_URL}/queue`]
+      let response = null
+      let lastError = null
+
+      for (const url of urls) {
+        try {
+          response = await axios.get(url, { headers: authHeaders() })
+          break
+        } catch (err) {
+          if (err?.response?.status === 404) {
+            lastError = err
+            continue
+          }
+          throw err
+        }
+      }
+
+      if (!response) {
+        throw lastError || new Error('Queue endpoint not found')
+      }
+
       setQueue(response.data?.queue || response.data || [])
     } catch (err) {
       const data = err?.response?.data
@@ -67,19 +87,42 @@ export default function DoctorHome() {
                             item.queueEntry?.tokenNumber ||
                             '-'}
                         </td>
-                        <td>{item.patientName || item.patient || '-'}</td>
                         <td>
-                          <span className="badge text-bg-warning text-uppercase">
-                            {item.status || item.queueEntry?.status || 'waiting'}
+                          {item.patientName ||
+                            item.patient ||
+                            item.appointment?.patient?.name ||
+                            '-'}
+                        </td>
+                        <td>
+                          <span className="badge text-bg-primary text-uppercase">
+                            {item.status || item.queueEntry?.status || 'in_progress'}
                           </span>
                         </td>
-                        <td>{item.appointmentId || item.appointment || '-'}</td>
+                        <td>{item.appointmentId || item.appointment?.id || '-'}</td>
                         <td>
                           <div className="d-flex gap-2">
-                            <button className="btn btn-success btn-sm">
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() =>
+                                navigate(
+                                  `/doctor/prescription?appointmentId=${
+                                    item.appointmentId || item.appointment?.id || ''
+                                  }`
+                                )
+                              }
+                            >
                               Add medicine
                             </button>
-                            <button className="btn btn-outline-secondary btn-sm">
+                            <button
+                              className="btn btn-outline-secondary btn-sm"
+                              onClick={() =>
+                                navigate(
+                                  `/doctor/report?appointmentId=${
+                                    item.appointmentId || item.appointment?.id || ''
+                                  }`
+                                )
+                              }
+                            >
                               Add report
                             </button>
                           </div>
